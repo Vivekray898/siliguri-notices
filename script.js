@@ -39,10 +39,13 @@ const DOM = {
     // Search & Filters
     searchInput: document.getElementById('searchInput'),
     clearSearchBtn: document.getElementById('clearSearch'),
+    // These may be present under different IDs or implemented as pill buttons
     filterAll: document.getElementById('filterAll'),
     filterRecent: document.getElementById('filterRecent'),
     filterDrive: document.getElementById('filterDrive'),
-    sortDropdown: document.getElementById('sortBy'),
+    filterPillsContainer: document.querySelector('.filter-pills'),
+    // sortSelect id in HTML may be 'sortSelect' (fallback to older 'sortBy')
+    sortDropdown: document.getElementById('sortBy') || document.getElementById('sortSelect'),
     
     // Actions
     retryBtn: document.getElementById('retryBtn'),
@@ -62,6 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initializeApp() {
     setupEventListeners();
     await loadNotices();
+    // Ensure filter pills reflect the initial active filter on load
+    setActiveFilter(state.activeFilter || 'all');
 }
 
 // ==========================================
@@ -72,10 +77,19 @@ function setupEventListeners() {
     DOM.searchInput?.addEventListener('input', debounce(handleSearch, 300));
     DOM.clearSearchBtn?.addEventListener('click', clearSearch);
     
-    // Filter Pills
-    DOM.filterAll?.addEventListener('click', () => setActiveFilter('all'));
-    DOM.filterRecent?.addEventListener('click', () => setActiveFilter('recent'));
-    DOM.filterDrive?.addEventListener('click', () => setActiveFilter('drive'));
+    // Filter Pills: prefer delegated buttons inside .filter-pills for flexibility
+    if (DOM.filterPillsContainer) {
+        DOM.filterPillsContainer.addEventListener('click', (ev) => {
+            const btn = ev.target.closest('.filter-pill');
+            if (!btn) return;
+            const filter = btn.getAttribute('data-filter') || 'all';
+            setActiveFilter(filter);
+        });
+    } else {
+        DOM.filterAll?.addEventListener('click', () => setActiveFilter('all'));
+        DOM.filterRecent?.addEventListener('click', () => setActiveFilter('recent'));
+        DOM.filterDrive?.addEventListener('click', () => setActiveFilter('drive'));
+    }
     
     // Sort
     DOM.sortDropdown?.addEventListener('change', handleSortChange);
@@ -183,25 +197,34 @@ function clearSearch() {
 
 function setActiveFilter(filter) {
     state.activeFilter = filter;
-    
-    // Update pill states
-    [DOM.filterAll, DOM.filterRecent, DOM.filterDrive].forEach(pill => {
-        if (pill) pill.setAttribute('aria-pressed', 'false');
-    });
-    
-    if (filter === 'all' && DOM.filterAll) {
-        DOM.filterAll.setAttribute('aria-pressed', 'true');
-    } else if (filter === 'recent' && DOM.filterRecent) {
-        DOM.filterRecent.setAttribute('aria-pressed', 'true');
-    } else if (filter === 'drive' && DOM.filterDrive) {
-        DOM.filterDrive.setAttribute('aria-pressed', 'true');
+
+    // Normalize possible filter keys (support 'withDrive' too)
+    const normalized = (f) => (f === 'withDrive' ? 'drive' : f);
+    const active = normalized(filter);
+
+    // Update any .filter-pill buttons (delegated UI) so aria-pressed toggles correctly
+    const pills = document.querySelectorAll('.filter-pill');
+    if (pills && pills.length) {
+        pills.forEach(p => {
+            const f = normalized(p.getAttribute('data-filter') || 'all');
+            p.setAttribute('aria-pressed', f === active ? 'true' : 'false');
+        });
     }
-    
+
+    // Also keep any specific DOM cached elements in sync (if present)
+    if (DOM.filterAll) DOM.filterAll.setAttribute('aria-pressed', active === 'all' ? 'true' : 'false');
+    if (DOM.filterRecent) DOM.filterRecent.setAttribute('aria-pressed', active === 'recent' ? 'true' : 'false');
+    if (DOM.filterDrive) DOM.filterDrive.setAttribute('aria-pressed', (active === 'drive') ? 'true' : 'false');
+
     applyFilters();
 }
 
 function handleSortChange(e) {
-    state.sortBy = e.target.value;
+    // Map UI values to internal sort keys
+    const val = e.target.value;
+    if (val === 'newest') state.sortBy = 'date-desc';
+    else if (val === 'oldest') state.sortBy = 'date-asc';
+    else state.sortBy = val;
     applyFilters();
 }
 
@@ -284,11 +307,11 @@ function updateFilterCounts() {
     
     const driveCount = state.allNotices.filter(notice => notice.google_drive).length;
     
-    // Update pill counts
-    const allCountEl = DOM.filterAll?.querySelector('.pill-count');
-    const recentCountEl = DOM.filterRecent?.querySelector('.pill-count');
-    const driveCountEl = DOM.filterDrive?.querySelector('.pill-count');
-    
+    // Update pill counts — prefer explicit IDs if present
+    const allCountEl = document.getElementById('countAll') || DOM.filterAll?.querySelector('.pill-count');
+    const recentCountEl = document.getElementById('countRecent') || DOM.filterRecent?.querySelector('.pill-count');
+    const driveCountEl = document.getElementById('countDrive') || DOM.filterDrive?.querySelector('.pill-count');
+
     if (allCountEl) allCountEl.textContent = allCount;
     if (recentCountEl) recentCountEl.textContent = recentCount;
     if (driveCountEl) driveCountEl.textContent = driveCount;
