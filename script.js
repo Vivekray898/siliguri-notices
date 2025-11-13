@@ -91,8 +91,12 @@ function setupEventListeners() {
         DOM.filterDrive?.addEventListener('click', () => setActiveFilter('drive'));
     }
     
-    // Sort
-    DOM.sortDropdown?.addEventListener('change', handleSortChange);
+    // Sort: re-query the select at run-time (in case DOM was not present at module load)
+    const sortEl = DOM.sortDropdown || document.getElementById('sortBy') || document.getElementById('sortSelect');
+    if (sortEl) {
+        DOM.sortDropdown = sortEl;
+        sortEl.addEventListener('change', handleSortChange);
+    }
     
     // Actions
     DOM.retryBtn?.addEventListener('click', () => loadNotices(true));
