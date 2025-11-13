@@ -66,52 +66,27 @@ def get_google_drive_link(notice_url):
 
 def load_existing_notices():
     """
-    Loads previously saved notices (latest JSON file) if available.
+    Loads previously saved notices from notices.json if available.
     Returns:
-        set: URLs of existing notices
+        tuple: (set of URLs, list of existing notices)
     """
-    json_files = [
-        f for f in os.listdir()
-        if f.startswith("notices_") and f.endswith(".json")
-    ]
-    if not json_files:
-        return set()
+    if not os.path.exists("notices.json"):
+        return set(), []
 
-    latest_file = sorted(json_files)[-1]
     try:
-        with open(latest_file, "r", encoding="utf-8") as f:
+        with open("notices.json", "r", encoding="utf-8") as f:
             data = json.load(f)
-            print(f"Loaded {latest_file} for comparison")
-            return {n["url"] for n in data.get("notices", [])}
+            existing_notices = data.get("notices", [])
+            print(f"Loaded notices.json with {len(existing_notices)} existing notices")
+            return {n["url"] for n in existing_notices}, existing_notices
     except Exception as e:
         print(f"✗ Error loading existing notices: {e}")
-        return set()
+        return set(), []
 
 
-def get_next_filename():
+def save_to_json(notices, filename="notices.json"):
     """
-    Generates next numbered filename like notices_1.json, notices_2.json, etc.
-    """
-    existing = [
-        f for f in os.listdir()
-        if f.startswith("notices_") and f.endswith(".json")
-    ]
-    if not existing:
-        return "notices_1.json"
-    numbers = []
-    for f in existing:
-        try:
-            num = int(f.split("_")[1].split(".")[0])
-            numbers.append(num)
-        except:
-            pass
-    next_num = max(numbers, default=0) + 1
-    return f"notices_{next_num}.json"
-
-
-def save_to_json(notices, filename):
-    """
-    Saves notices to a JSON file.
+    Saves notices to notices.json file.
     """
     try:
         data = {
@@ -135,7 +110,7 @@ def main():
     print("=" * 60)
     print(f"\nScraping from: {NEWS_URL}\n")
 
-    existing_links = load_existing_notices()
+    existing_links, existing_notices = load_existing_notices()
     all_notices = get_notice_links()
 
     if not all_notices:
@@ -147,6 +122,8 @@ def main():
 
     if not new_notices:
         print("\nNo new notices found. Everything is up to date.")
+        # Still save to update the scraped_at timestamp
+        save_to_json(existing_notices)
         return
 
     print(
@@ -158,25 +135,15 @@ def main():
         gdrive = get_google_drive_link(notice["url"])
         notice["google_drive"] = gdrive
 
-    # Combine old + new
-    combined = []
-    if existing_links:
-        latest_file = sorted([
-            f for f in os.listdir()
-            if f.startswith("notices_") and f.endswith(".json")
-        ])[-1]
-        with open(latest_file, "r", encoding="utf-8") as f:
-            old_data = json.load(f)
-        combined = old_data.get("notices", []) + new_notices
-    else:
-        combined = new_notices
+    # Combine new notices at the beginning (most recent first) + existing notices
+    combined = new_notices + existing_notices
 
-    # Save into next numbered file
-    new_filename = get_next_filename()
-    save_to_json(combined, new_filename)
+    # Save to notices.json
+    save_to_json(combined)
 
     print("\n" + "=" * 60)
-    print(f"Added {len(new_notices)} new notice(s). Saved as {new_filename}.")
+    print(f"Added {len(new_notices)} new notice(s) to notices.json.")
+    print(f"Total notices: {len(combined)}")
     print("=" * 60)
 
 
