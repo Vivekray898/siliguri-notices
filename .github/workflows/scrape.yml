@@ -1,0 +1,71 @@
+name: Scrape College Notices
+
+# Run every 6 hours and allow manual triggers
+on:
+  schedule:
+    # Runs at 00:00, 06:00, 12:00, 18:00 UTC every day
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allows manual trigger from Actions tab
+  push:
+    branches: [main]
+    paths:
+      - 'scraper.py' # Re-run if scraper code changes
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+    
+    # Set permissions to allow pushing commits back to the repo
+    permissions:
+      contents: write
+    
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Step 2: Set up Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip' # Cache pip dependencies for faster builds
+      
+      # Step 3: Install Python dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+      
+      # Step 4: Run the scraper script
+      - name: Run scraper
+        run: |
+          python scraper.py
+          echo "Scraper completed successfully"
+      
+      # Step 5: Configure Git for commits
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Actions Bot"
+      
+      # Step 6: Check for changes and commit if any
+      - name: Commit and push changes
+        run: |
+          git add notices.json
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit - notices.json is up to date"
+          else
+            git commit -m "🤖 Auto-update notices.json - $(date +'%Y-%m-%d %H:%M UTC')"
+            git push
+            echo "Successfully pushed updated notices.json"
+          fi
+      
+      # Step 7: Display summary
+      - name: Summary
+        run: |
+          echo "✅ Workflow completed"
+          echo "📊 Check the notices.json file for latest updates"

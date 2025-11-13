@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siliguri College - Notice Board</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Siliguri College</h1>
+            <p class="tagline">Official Notice Board</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="notice-header">
+            <h2>Latest Notices</h2>
+            <div class="stats">
+                <span id="totalNotices">Loading...</span>
+                <span id="lastUpdated">Last updated: <span id="scrapedTime"></span></span>
+            </div>
+        </div>
+
+        <!-- Mobile search (visible only on small screens) -->
+        <div class="mobile-search" aria-hidden="true">
+            <input type="text" id="mobileSearch" placeholder="Search notices..." class="search-input" aria-label="Search notices">
+        </div>
+
+        <div class="layout-grid">
+            <aside class="sidebar">
+                <div class="filter-panel">
+                    <label for="searchBox" class="filter-label">Search</label>
+                    <input type="text" id="searchBox" placeholder="Search by title or date" class="search-input" aria-label="Search notices">
+
+                    <label for="deptFilter" class="filter-label">Department</label>
+                    <select id="deptFilter" class="sort-select">
+                        <option value="all">All Departments</option>
+                    </select>
+
+                    <label class="filter-label">Date Range</label>
+                    <select id="dateRange" class="sort-select">
+                        <option value="all">All time</option>
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                    </select>
+
+                    <label class="filter-check"><input type="checkbox" id="hasDriveFilter"> Only with Drive/PDF</label>
+
+                    <button id="clearFilters" class="btn" style="margin-top:10px;border-color:var(--border);background:transparent">Clear filters</button>
+                </div>
+            </aside>
+
+            <section class="content">
+                    <div class="filter-controls">
+                        <div>
+                            <select id="sortOrder" class="sort-select">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id="filtersToggle" class="btn filters-toggle" aria-expanded="false" aria-controls="sidebar">Filters</button>
+                        </div>
+                    </div>
+
+                <div id="noticeContainer" class="notice-container">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading notices...</p>
+                    </div>
+                </div>
+
+                <div id="noResults" class="no-results" style="display: none;">
+                    <p>No notices found matching your filters.</p>
+                </div>
+            </section>
+        </div>
+
+    <div id="overlay" class="overlay" aria-hidden="true"></div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Siliguri College. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
