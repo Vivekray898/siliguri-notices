@@ -665,6 +665,13 @@ a:hover {
     .notice-actions {
         flex-direction: column;
     }
+
+    /* Disable sticky header on small & medium devices to avoid covering content */
+    .site-header {
+        position: static;
+        top: auto;
+        z-index: auto;
+    }
 }
 
 @media (max-width: 480px) {
