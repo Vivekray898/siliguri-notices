@@ -66,7 +66,17 @@ async function initializeApp() {
     setupEventListeners();
     await loadNotices();
     // Ensure filter pills reflect the initial active filter on load
+    // normalize and apply initial filter
     setActiveFilter(state.activeFilter || 'all');
+
+    // Ensure sort select shows current sort choice on load
+    const sortEl = DOM.sortDropdown || document.getElementById('sortBy') || document.getElementById('sortSelect');
+    if (sortEl) {
+        // map internal sort keys to UI values
+        if (state.sortBy === 'date-desc') sortEl.value = 'newest';
+        else if (state.sortBy === 'date-asc') sortEl.value = 'oldest';
+        else sortEl.value = sortEl.value || '';
+    }
 }
 
 // ==========================================
@@ -84,6 +94,18 @@ function setupEventListeners() {
             if (!btn) return;
             const filter = btn.getAttribute('data-filter') || 'all';
             setActiveFilter(filter);
+        });
+        // Keyboard support: space/enter activate a pill when focused
+        DOM.filterPillsContainer.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+                const btn = ev.target.closest && ev.target.closest('.filter-pill') ? ev.target.closest('.filter-pill') : (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('filter-pill') ? document.activeElement : null);
+                if (btn) {
+                    ev.preventDefault();
+                    const filter = btn.getAttribute('data-filter') || 'all';
+                    setActiveFilter(filter);
+                    btn.click?.();
+                }
+            }
         });
     } else {
         DOM.filterAll?.addEventListener('click', () => setActiveFilter('all'));
@@ -200,11 +222,11 @@ function clearSearch() {
 }
 
 function setActiveFilter(filter) {
-    state.activeFilter = filter;
-
     // Normalize possible filter keys (support 'withDrive' too)
     const normalized = (f) => (f === 'withDrive' ? 'drive' : f);
     const active = normalized(filter);
+    // store normalized filter in state so applyFilters() sees correct value
+    state.activeFilter = active;
 
     // Update any .filter-pill buttons (delegated UI) so aria-pressed toggles correctly
     const pills = document.querySelectorAll('.filter-pill');
@@ -212,6 +234,13 @@ function setActiveFilter(filter) {
         pills.forEach(p => {
             const f = normalized(p.getAttribute('data-filter') || 'all');
             p.setAttribute('aria-pressed', f === active ? 'true' : 'false');
+        });
+    }
+
+    // Accessibility: ensure pill buttons are keyboard-accessible by setting tabindex
+    if (pills && pills.length) {
+        pills.forEach(p => {
+            if (!p.hasAttribute('tabindex')) p.setAttribute('tabindex', '0');
         });
     }
 
