@@ -1,7 +1,13 @@
 {
-  "scraped_at": "2025-12-15T01:26:27.094023",
-  "total_notices": 58,
+  "scraped_at": "2025-12-15T12:41:25.537470",
+  "total_notices": 59,
   "notices": [
+    {
+      "title": "Distribution of marksheet",
+      "url": "https://siliguricollege.org.in/news/distribution-of-marksheet-20251215121235.html",
+      "date": "Posted on : Monday, 15th December 2025",
+      "google_drive": "https://drive.google.com/file/d/1aeT4S8n2BEDRKeL_pIMTgMa3DRE9RdR9/view?usp=drivesdk"
+    },
     {
       "title": "Odd Semester Practical Schedule: Dept. of Computer Science and BCA",
       "url": "https://siliguricollege.org.in/news/odd-semester-practical-schedule-dept-of-computer-science-and-bca.html",
