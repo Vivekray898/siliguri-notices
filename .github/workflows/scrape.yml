@@ -1,16 +1,14 @@
 name: Scrape College Notices
-
-# Run every 6 hours and allow manual triggers
+# Run every 4 days and allow manual triggers
 on:
   schedule:
-    # Runs every 4 days at 00:00 UTC
+    # Runs at 00:00 UTC every 4 days
     - cron: '0 0 */4 * *'
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch: # Allows manual trigger from Actions tab
   push:
     branches: [main]
     paths:
-      - 'scraper.py'
-
+      - 'scraper.py' # Re-run if scraper code changes
 jobs:
   scrape-and-update:
     runs-on: ubuntu-latest
