@@ -1,7 +1,19 @@
 {
-  "scraped_at": "2025-12-17T01:49:09.447639",
-  "total_notices": 59,
+  "scraped_at": "2025-12-21T01:59:28.347782",
+  "total_notices": 61,
   "notices": [
+    {
+      "title": "Notice for Platinum Jubilee Registration",
+      "url": "https://siliguricollege.org.in/news/notice-for-platinum-jubilee-registration-20251219201806.html",
+      "date": "Posted on : Friday, 19th December 2025",
+      "google_drive": null
+    },
+    {
+      "title": "Practical Examination Schedule: Dept. of Physics",
+      "url": "https://siliguricollege.org.in/news/practical-examination-schedule-dept-of-physics.html",
+      "date": "Posted on : Thursday, 18th December 2025",
+      "google_drive": "https://drive.google.com/file/d/1i2Y6LcxjewRvqXJMu3drbTU5aPwBEl1L/view?usp=drivesdk"
+    },
     {
       "title": "Distribution of marksheet",
       "url": "https://siliguricollege.org.in/news/distribution-of-marksheet-20251215121235.html",
